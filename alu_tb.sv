@@ -1,29 +1,25 @@
-`timescale 1ns / 1ps
-
-`include "uvm_macros.svh"
-import uvm_pkg::*;
-`include "alu_if.sv"
-
 module alu_tb;
-    logic clk;
-    logic rst_n;
+  import uvm_pkg::*;
+  `include "uvm_macros.svh"
 
-    // Instantiate Interface
-    alu_if alu_intf (clk, rst_n);
+  logic clk, rst;
+  alu_if intf(clk, rst);
 
-    // Generate Clock Signal
-    always #5 clk = ~clk;
+  // DUT Instantiation
+  alu dut (
+    .a(intf.a),
+    .b(intf.b),
+    .op(intf.op),
+    .result(intf.result),
+    .clk(clk),
+    .rst(rst)
+  );
 
-    // Generate Reset Signal
-    initial begin
-        clk = 0;
-        rst_n = 0;
-        #10 rst_n = 1;
-    end
+  initial begin
+    uvm_config_db#(virtual alu_if)::set(null, "*", "vif", intf);
+    run_test("alu_test");
+  end
 
-    // Start UVM Test
-    initial begin
-        uvm_config_db#(virtual alu_if)::set(null, "uvm_test_top", "alu_if", alu_intf);
-        run_test("alu_test");
-    end
+  always #5 clk = ~clk;
+
 endmodule
